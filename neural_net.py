@@ -5,7 +5,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(x))
 
 
-def sigmoid_backward(grad_prev, x):
+def sigmoid_backprop(grad_prev, x):
     a = sigmoid(x)
     return grad_prev * a * (1 - a)
 
