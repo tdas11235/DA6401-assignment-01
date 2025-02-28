@@ -2,12 +2,31 @@ import numpy as np
 
 
 def sigmoid(x):
-    return 1 / (1 + np.exp(x))
+    return 1 / (1 + np.exp(-x))
 
 
 def sigmoid_backprop(grad_prev, x):
     a = sigmoid(x)
     return grad_prev * a * (1 - a)
+
+
+def relu(x):
+    return np.maximum(x, 0)
+
+
+def relu_backprop(grad_prev, x):
+    grad = grad_prev.copy()
+    grad[x <= 0] = 0
+    return grad
+
+
+def tanh(x):
+    return np.tanh(x)
+
+
+def tanh_backprop(grad_prev, x):
+    a = tanh(x)
+    return grad_prev * (1 - a ** 2)
 
 
 class Linear:
@@ -34,14 +53,16 @@ class Module:
 
     def parameters(self):
         params = []
-        for layer in self.__dict__.values():
-            if isinstance(layer, Linear):
-                params.append(layer.w)
-                params.append(layer.b)
+        if hasattr(self, "layers") and isinstance(self.layers, list):
+            for layer in self.layers:
+                if isinstance(layer, Linear):
+                    params.append(layer.w)
+                    params.append(layer.b)
         return params
 
     def zero_grad(self):
-        for layer in self.__dict__.values():
-            if isinstance(layer, Linear):
-                layer.dw.fill(0)
-                layer.db.fill(0)
+        if hasattr(self, "layers") and isinstance(self.layers, list):
+            for layer in self.layers:
+                if isinstance(layer, Linear):
+                    layer.dw.fill(0)
+                    layer.db.fill(0)
