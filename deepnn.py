@@ -1,4 +1,3 @@
-import numpy as np
 import neural_net as nn
 
 
@@ -13,9 +12,11 @@ class DNN(nn.Module):
             prev_dim = h_dim
         self.layers.append(nn.Linear(prev_dim, output_dim))
 
-    def forward(self, x):
+    def forward(self, x, optimiser=None):
         self.h = []
         self.a = []
+        if isinstance(optimiser, nn.NAG):
+            optimiser.lookahead(self)
         for i in range(self.n):
             x = self.layers[i].forward(x)
             self.h.append(x)
@@ -26,5 +27,7 @@ class DNN(nn.Module):
         return x
 
     def backprop(self, grad_prev):
-        for i in range(self.n, -1, -1):
-            gx =
+        for i in range(self.n, 0, -1):
+            gx = self.layers[i].backprop(grad_prev)
+            grad_prev = nn.sigmoid_backprop(gx, self.h[i-1])
+        self.layers[0].backprop(grad_prev)
