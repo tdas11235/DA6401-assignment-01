@@ -40,5 +40,5 @@ class DNN(nn.Module):
     def backprop(self, grad_prev):
         for i in range(self.n, 0, -1):
             gx = self.layers[i].backprop(grad_prev)
-            grad_prev = nn.act_backprop(gx, self.h[i-1])
+            grad_prev = self.act_backprop(gx, self.h[i-1])
         self.layers[0].backprop(grad_prev)
