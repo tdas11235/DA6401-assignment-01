@@ -38,6 +38,8 @@ def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type=
         optimiser = nn.MGD(lr, beta)
     elif optimiser_type == "NAG":
         optimiser = nn.NAG(lr, beta)
+    elif optimiser_type == "RMSProp":
+        optimiser = nn.RMSProp(lr, beta)
     model.set_optimiser(optimiser)
     for epoch in range(epochs):
         h = model.forward(X)
