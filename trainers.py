@@ -19,7 +19,8 @@ def mse(y_true, y_pred):
 
 
 def mse_backprop(y_true, y_pred):
-    return 2 * (y_pred - y_true) / y_true.shape[0]
+    return (2 / y_true.shape[0]) * y_pred * ((y_pred - y_true) -
+                                             np.sum((y_pred - y_true) * y_pred, axis=1, keepdims=True))
 
 
 def softmax(h):
@@ -45,7 +46,7 @@ def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type=
             loss = ce(y, y_pred)
             grad_loss = ce_backprop(y, y_pred)
         else:
-            y_pred = h
+            y_pred = softmax(h)
             loss = mse(y, y_pred)
             grad_loss = mse_backprop(y, y_pred)
         model.zero_grad()
