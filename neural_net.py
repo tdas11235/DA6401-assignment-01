@@ -30,13 +30,15 @@ def tanh_backprop(grad_prev, x):
 
 
 class Linear:
-    def __init__(self, in_neuron, out_neuron, init_method="random"):
+    def __init__(self, in_neuron, out_neuron, init_method="random", init_b=False):
         if init_method == "xavier":
             self.w = np.random.randn(in_neuron, out_neuron) * (1 / in_neuron)
-            # self.b = np.random.randn(out_neuron) * (1 / in_neuron)
+            if init_b:
+                self.b = np.random.randn(out_neuron) * (1 / in_neuron)
         else:
             self.w = np.random.randn(in_neuron, out_neuron)
-            # self.b = np.random.randn(out_neuron)
+            if init_b:
+                self.b = np.random.randn(out_neuron)
         self.b = np.zeros(out_neuron)
         self.dw = np.zeros_like(self.w)
         self.db = np.zeros_like(self.b)
@@ -48,8 +50,8 @@ class Linear:
     def backprop(self, grad_prev):
         self.dw = self.h.T @ grad_prev
         self.db = np.sum(grad_prev, axis=0)
-        print("Max weight gradient:", np.max(self.dw))
-        print("Max bias gradient:", np.max(self.db))
+        # print("Max weight gradient:", np.max(self.dw))
+        # print("Max bias gradient:", np.max(self.db))
         return grad_prev @ self.w.T
 
 
@@ -127,10 +129,10 @@ class MGD(Optimiser):
             i = 0
             for layer in model.layers:
                 if isinstance(layer, Linear):
-                    self.u_w[i] = self.beta * self.u_w[i] + layer.dw
-                    self.u_b[i] = self.beta * self.u_b[i] + layer.db
-                    layer.w -= self.lr * self.u_w[i]
-                    layer.b -= self.lr * self.u_b[i]
+                    self.u_w[i] = self.beta * self.u_w[i] + self.lr * layer.dw
+                    self.u_b[i] = self.beta * self.u_b[i] + self.lr * layer.db
+                    layer.w -= self.u_w[i]
+                    layer.b -= self.u_b[i]
                     i += 1
 
 
@@ -172,8 +174,8 @@ class NAG(Optimiser):
                 if isinstance(layer, Linear):
                     layer.w += self.beta * self.u_w[i]
                     layer.b += self.beta * self.u_b[i]
-                    self.u_w[i] = self.beta * self.u_w[i] + layer.dw
-                    self.u_b[i] = self.beta * self.u_b[i] + layer.db
-                    layer.w -= self.lr * self.u_w[i]
-                    layer.b -= self.lr * self.u_b[i]
+                    self.u_w[i] = self.beta * self.u_w[i] + self.lr * layer.dw
+                    self.u_b[i] = self.beta * self.u_b[i] + self.lr * layer.db
+                    layer.w -= self.u_w[i]
+                    layer.b -= self.u_b[i]
                     i += 1

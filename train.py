@@ -6,4 +6,4 @@ import trainers as tr
 x_train = x_train.astype('float32') / 255.0
 x_test = x_test.astype('float32') / 255.0
 tr.normal_trainer(x_train, y_train, 784, 10, [
-                  128, 64, 32, 32], epochs=10, act_type='sigmoid', optimiser_type='GD', lr=0.005, loss_type='mse')
+                  128, 64, 32, 32], epochs=10, act_type='sigmoid', optimiser_type='NAG', lr=0.1, beta=0.9, loss_type='ce')
