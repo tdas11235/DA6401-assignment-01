@@ -5,12 +5,12 @@ import numpy as np
 
 def ce(y_true, y_pred, epsilon=1e-12):
     y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-    loss = -np.sum(y_true * np.log(y_pred))
+    loss = -np.sum(y_true * np.log(y_pred)) / y_true.shape[0]
     return loss
 
 
 def ce_backprop(y_true, y_pred):
-    return y_pred - y_true
+    return (y_pred - y_true) / y_true.shape[0]
 
 
 def mse(y_true, y_pred):

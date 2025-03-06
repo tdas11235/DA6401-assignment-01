@@ -23,11 +23,11 @@ class DNN(nn.Module):
             prev_dim = h_dim
         self.layers.append(nn.Linear(prev_dim, out_dim))
 
-    def forward(self, x, optimiser=None):
+    def forward(self, x):
         self.h = []
         self.a = []
-        if isinstance(optimiser, nn.NAG):
-            optimiser.lookahead(self)
+        if isinstance(self.optimiser, nn.NAG):
+            self.optimiser.lookahead(self)
         for i in range(self.n):
             x = self.layers[i].forward(x)
             self.h.append(x)
@@ -40,5 +40,6 @@ class DNN(nn.Module):
     def backprop(self, grad_prev):
         for i in range(self.n, 0, -1):
             gx = self.layers[i].backprop(grad_prev)
-            grad_prev = self.act_backprop(gx, self.h[i-1])
+            print(f"In layer {i}")
+            grad_prev = self.act_backprop(gx, self.a[i-1])
         self.layers[0].backprop(grad_prev)

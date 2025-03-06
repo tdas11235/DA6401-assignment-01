@@ -33,20 +33,23 @@ class Linear:
     def __init__(self, in_neuron, out_neuron, init_method="random"):
         if init_method == "xavier":
             self.w = np.random.randn(in_neuron, out_neuron) * (1 / in_neuron)
-            self.b = np.random.randn(out_neuron) * (1 / in_neuron)
+            # self.b = np.random.randn(out_neuron) * (1 / in_neuron)
         else:
             self.w = np.random.randn(in_neuron, out_neuron)
-            self.b = np.random.randn(out_neuron)
+            # self.b = np.random.randn(out_neuron)
+        self.b = np.zeros(out_neuron)
         self.dw = np.zeros_like(self.w)
         self.db = np.zeros_like(self.b)
 
     def forward(self, h):
         self.h = h
-        return h @ self.w + self.b
+        return h @ self.w + self.b.reshape(1, -1)
 
     def backprop(self, grad_prev):
         self.dw = self.h.T @ grad_prev
         self.db = np.sum(grad_prev, axis=0)
+        print("Max weight gradient:", np.max(self.dw))
+        print("Max bias gradient:", np.max(self.db))
         return grad_prev @ self.w.T
 
 
