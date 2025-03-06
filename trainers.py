@@ -2,6 +2,7 @@ import neural_net as nn
 from deepnn import *
 import optimisers as opt
 import numpy as np
+from tqdm import tqdm
 
 
 def ce(y_true, y_pred, epsilon=1e-12):
@@ -42,7 +43,7 @@ def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type=
     elif optimiser_type == "RMSProp":
         optimiser = opt.RMSProp(lr, beta)
     model.set_optimiser(optimiser)
-    for epoch in range(epochs):
+    for epoch in tqdm(range(epochs)):
         h = model.forward(X)
         if loss_type == 'ce':
             y_pred = softmax(h)
