@@ -33,7 +33,7 @@ def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type=
     model = DNN(in_dim, out_dim, hidden_dims, act_type)
     if optimiser_type == "GD":
         optimiser = nn.GD(lr)
-    elif optimiser_type == "Momentum":
+    elif optimiser_type == "MGD":
         optimiser = nn.MGD(lr, beta)
     elif optimiser_type == "NAG":
         optimiser = nn.NAG(lr, beta)

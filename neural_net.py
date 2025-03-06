@@ -130,7 +130,7 @@ class MGD(Optimiser):
                     self.u_w[i] = self.beta * self.u_w[i] + layer.dw
                     self.u_b[i] = self.beta * self.u_b[i] + layer.db
                     layer.w -= self.lr * self.u_w[i]
-                    layer.u -= self.lr * self.u_b[i]
+                    layer.b -= self.lr * self.u_b[i]
                     i += 1
 
 
