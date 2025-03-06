@@ -1,4 +1,5 @@
 import neural_net as nn
+import optimisers as opt
 
 
 class DNN(nn.Module):
@@ -26,7 +27,7 @@ class DNN(nn.Module):
     def forward(self, x):
         self.h = []
         self.a = []
-        if isinstance(self.optimiser, nn.NAG):
+        if isinstance(self.optimiser, opt.NAG):
             self.optimiser.lookahead(self)
         for i in range(self.n):
             x = self.layers[i].forward(x)

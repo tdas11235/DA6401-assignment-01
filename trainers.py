@@ -1,5 +1,6 @@
 import neural_net as nn
 from deepnn import *
+import optimisers as opt
 import numpy as np
 
 
@@ -33,13 +34,13 @@ def softmax(h):
 def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='NAG', beta=0.9, act_type='sigmoid', loss_type='ce', epochs=100):
     model = DNN(in_dim, out_dim, hidden_dims, act_type)
     if optimiser_type == "GD":
-        optimiser = nn.GD(lr)
+        optimiser = opt.GD(lr)
     elif optimiser_type == "MGD":
-        optimiser = nn.MGD(lr, beta)
+        optimiser = opt.MGD(lr, beta)
     elif optimiser_type == "NAG":
-        optimiser = nn.NAG(lr, beta)
+        optimiser = opt.NAG(lr, beta)
     elif optimiser_type == "RMSProp":
-        optimiser = nn.RMSProp(lr, beta)
+        optimiser = opt.RMSProp(lr, beta)
     model.set_optimiser(optimiser)
     for epoch in range(epochs):
         h = model.forward(X)
