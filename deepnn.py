@@ -36,7 +36,7 @@ class DNN(nn.Module):
             self.a.append(x)
         x = self.layers[self.n].forward(x)
         self.h.append(x)
-        return x
+        return nn.softmax(x)
 
     def backprop(self, grad_prev):
         for i in range(self.n, 0, -1):

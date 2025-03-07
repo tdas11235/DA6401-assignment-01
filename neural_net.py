@@ -29,6 +29,13 @@ def tanh_backprop(grad_prev, x):
     return grad_prev * (1 - a ** 2)
 
 
+def softmax(h):
+    h -= np.max(h, axis=1, keepdims=True)
+    exph = np.exp(h)
+    probs = exph / np.sum(exph, axis=1, keepdims=True)
+    return probs
+
+
 class Linear:
     def __init__(self, in_neuron, out_neuron, init_method="random", init_b=False):
         if init_method == "xavier":
