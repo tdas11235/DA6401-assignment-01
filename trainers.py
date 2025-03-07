@@ -75,4 +75,4 @@ def stochastic_trainer(X, y, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.00
             epoch_loss += train_loss
             batch_bar.set_postfix(loss=train_loss)
         avg_epoch_loss = epoch_loss / (num_samples // batch_size)
-        print(f"Epoch {epoch+1}, Avg Loss: {avg_epoch_loss:.4f}")
+        print(f"\nEpoch {epoch+1}, Avg Loss: {avg_epoch_loss:.4f}")
