@@ -4,7 +4,7 @@ from tqdm import tqdm
 from utils import *
 
 
-def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='NAG', beta=0.9, act_type='sigmoid', loss_type='ce', epochs=100):
+def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='NAG', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='ce', epochs=100):
     model = DNN(in_dim, out_dim, hidden_dims, act_type)
     if loss_type == 'ce':
         loss = CrossEntropy()
@@ -18,6 +18,8 @@ def normal_trainer(X, y, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type=
         optimiser = opt.NAG(lr, beta)
     elif optimiser_type == "RMSProp":
         optimiser = opt.RMSProp(lr, beta)
+    elif optimiser_type == "Adam":
+        optimiser = opt.Adam(lr, beta1, beta2)
     model.set_optimiser(optimiser)
     for epoch in tqdm(range(epochs)):
         y_pred = model.forward(X)

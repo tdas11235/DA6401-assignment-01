@@ -126,3 +126,53 @@ class RMSProp(Optimiser):
                         (np.sqrt(self.v_w[i]) + self.epsilon)
                     layer.b -= self.lr * layer.db / \
                         (np.sqrt(self.v_b[i]) + self.epsilon)
+
+
+class Adam(Optimiser):
+    def __init__(self, lr, beta1=0.9, beta2=0.999, epsilon=1e-8):
+        super().__init__(lr)
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.m_w = []
+        self.m_b = []
+        self.v_w = []
+        self.v_b = []
+        self.t = 0
+        self.started = False
+
+    def start(self, model):
+        if hasattr(model, "layers") and isinstance(model.layers, list):
+            for layer in model.layers:
+                if isinstance(layer, Linear):
+                    self.m_w.append(np.zeros_like(layer.w))
+                    self.m_b.append(np.zeros_like(layer.b))
+                    self.v_w.append(np.zeros_like(layer.w))
+                    self.v_b.append(np.zeros_like(layer.b))
+            self.started = True
+        else:
+            print("Layers not found!")
+
+    def update(self, model):
+        if not self.started:
+            self.start(model)
+        self.t += 1
+        if hasattr(model, "layers") and isinstance(model.layers, list):
+            for i, layer in enumerate(model.layers):
+                if isinstance(layer, Linear):
+                    self.m_w[i] = self.beta1 * self.m_w[i] + \
+                        (1 - self.beta1) * layer.dw
+                    self.m_b[i] = self.beta1 * self.m_b[i] + \
+                        (1 - self.beta1) * layer.db
+                    self.v_w[i] = self.beta2 * self.v_w[i] + \
+                        (1 - self.beta2) * (layer.dw ** 2)
+                    self.v_b[i] = self.beta2 * self.v_b[i] + \
+                        (1 - self.beta2) * (layer.db ** 2)
+                    m_w_hat = self.m_w[i] / (1 - self.beta1 ** self.t)
+                    m_b_hat = self.m_b[i] / (1 - self.beta1 ** self.t)
+                    v_w_hat = self.v_w[i] / (1 - self.beta2 ** self.t)
+                    v_b_hat = self.v_b[i] / (1 - self.beta2 ** self.t)
+                    layer.w -= self.lr * m_w_hat / \
+                        (np.sqrt(v_w_hat) + self.epsilon)
+                    layer.b -= self.lr * m_b_hat / \
+                        (np.sqrt(v_b_hat) + self.epsilon)
