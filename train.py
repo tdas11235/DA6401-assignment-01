@@ -1,6 +1,7 @@
 import data_loader as dl
 import trainers as tr
 import utils as ut
+from tqdm import tqdm
 import wandb
 import yaml
 
@@ -30,16 +31,23 @@ def train():
     trainer = tr.StochasticTrainer(
         784, 10, hidden_sizes,
         batch_size=config.batch_size,
-        epochs=config.epochs,
         act_type=config.activation,
         optimiser_type=config.optimizer,
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
         loss_type='cross_entropy'
     )
-    trainer.train(x_train, y_train)
-    val_accuracy = trainer.eval(x_val, y_val)
-    wandb.log({"val_accuracy": val_accuracy})
+    for epoch in tqdm(range(config.epochs), desc="Training Progress"):
+        train_loss = trainer.train(x_train, y_train, epoch)
+        val_accuracy, val_loss = trainer.eval(x_val, y_val)
+        wandb.log({
+            "epoch": epoch + 1,
+            "train_loss": train_loss,
+            "val_loss": val_loss,
+            "val_accuracy": val_accuracy
+        })
+    val_accuracy, _ = trainer.eval(x_val, y_val)
+    wandb.log({"accuracy": val_accuracy})
 
 
 def main():
@@ -49,8 +57,8 @@ def main():
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
-    sweep_id = wandb.sweep(sweep_config, project="da6401-test-2")
-    wandb.agent(sweep_id, train, count=40)
+    sweep_id = wandb.sweep(sweep_config, project="da6401-test-3")
+    wandb.agent(sweep_id, train, count=30)
 
 
 if __name__ == '__main__':
