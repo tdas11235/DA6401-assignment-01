@@ -3,7 +3,7 @@ import optimisers as opt
 
 
 class DNN(nn.Module):
-    def __init__(self, in_dim, out_dim, hidden_dims, act_type='sigmoid'):
+    def __init__(self, in_dim, out_dim, hidden_dims, act_type='sigmoid', init_method="random"):
         super().__init__()
         self.n = len(hidden_dims)
         self.layers = []
@@ -20,9 +20,9 @@ class DNN(nn.Module):
         else:
             raise
         for h_dim in hidden_dims:
-            self.layers.append(nn.Linear(prev_dim, h_dim))
+            self.layers.append(nn.Linear(prev_dim, h_dim, init_method))
             prev_dim = h_dim
-        self.layers.append(nn.Linear(prev_dim, out_dim))
+        self.layers.append(nn.Linear(prev_dim, out_dim, init_method))
 
     def forward(self, x):
         self.h = []
