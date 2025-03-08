@@ -11,14 +11,17 @@ class DNN(nn.Module):
         if act_type == 'sigmoid':
             self.act = nn.sigmoid
             self.act_backprop = nn.sigmoid_backprop
-        elif act_type == 'relu':
+        elif act_type == 'ReLU':
             self.act = nn.relu
             self.act_backprop = nn.relu_backprop
         elif act_type == 'tanh':
             self.act = nn.tanh
             self.act_backprop = nn.tanh_backprop
+        elif act_type == 'identity':
+            self.act = nn.identity
+            self.act_backprop = nn.identity_backprop
         else:
-            raise
+            raise NotImplementedError
         for h_dim in hidden_dims:
             self.layers.append(nn.Linear(prev_dim, h_dim, init_method))
             prev_dim = h_dim
@@ -41,6 +44,5 @@ class DNN(nn.Module):
     def backprop(self, grad_prev):
         for i in range(self.n, 0, -1):
             gx = self.layers[i].backprop(grad_prev)
-            # print(f"In layer {i}")
             grad_prev = self.act_backprop(gx, self.a[i-1])
         self.layers[0].backprop(grad_prev)

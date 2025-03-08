@@ -11,24 +11,27 @@ class Optimiser:
 
 
 class GD(Optimiser):
-    def __init__(self, lr):
+    def __init__(self, lr, weight_decay=0):
         super().__init__(lr)
+        self.weight_decay = weight_decay
 
     def update(self, model):
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for layer in model.layers:
                 if isinstance(layer, Linear):
-                    layer.w -= self.lr * layer.dw
+                    layer.w -= self.lr * \
+                        (layer.dw + self.weight_decay * layer.w)
                     layer.b -= self.lr * layer.db
 
 
 class MGD(Optimiser):
-    def __init__(self, lr, beta=0.9):
+    def __init__(self, lr, beta=0.9, weight_decay=0):
         super().__init__(lr)
         self.beta = beta
         self.u_w = []
         self.u_b = []
         self.started = False
+        self.weight_decay = weight_decay
 
     def start(self, model):
         if hasattr(model, "layers") and isinstance(model.layers, list):
@@ -46,19 +49,21 @@ class MGD(Optimiser):
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for i, layer in enumerate(model.layers):
                 if isinstance(layer, Linear):
-                    self.u_w[i] = self.beta * self.u_w[i] + self.lr * layer.dw
+                    self.u_w[i] = self.beta * self.u_w[i] + self.lr * \
+                        (layer.dw + self.weight_decay * layer.w)
                     self.u_b[i] = self.beta * self.u_b[i] + self.lr * layer.db
                     layer.w -= self.u_w[i]
                     layer.b -= self.u_b[i]
 
 
 class NAG(Optimiser):
-    def __init__(self, lr, beta=0.9):
+    def __init__(self, lr, beta=0.9, weight_decay=0):
         super().__init__(lr)
         self.beta = beta
         self.u_w = []
         self.u_b = []
         self.started = False
+        self.weight_decay = weight_decay
 
     def start(self, model):
         if hasattr(model, "layers") and isinstance(model.layers, list):
@@ -87,20 +92,22 @@ class NAG(Optimiser):
                 if isinstance(layer, Linear):
                     layer.w += self.beta * self.u_w[i]
                     layer.b += self.beta * self.u_b[i]
-                    self.u_w[i] = self.beta * self.u_w[i] + self.lr * layer.dw
+                    self.u_w[i] = self.beta * self.u_w[i] + self.lr * \
+                        (layer.dw + self.weight_decay * layer.w)
                     self.u_b[i] = self.beta * self.u_b[i] + self.lr * layer.db
                     layer.w -= self.u_w[i]
                     layer.b -= self.u_b[i]
 
 
 class RMSProp(Optimiser):
-    def __init__(self, lr, beta=0.9, epsilon=1e-8):
+    def __init__(self, lr, beta=0.9, epsilon=1e-8, weight_decay=0):
         super().__init__(lr)
         self.beta = beta
         self.epsilon = epsilon
         self.v_w = []
         self.v_b = []
         self.started = False
+        self.weight_decay = weight_decay
 
     def start(self, model):
         if hasattr(model, "layers") and isinstance(model.layers, list):
@@ -119,17 +126,18 @@ class RMSProp(Optimiser):
             for i, layer in enumerate(model.layers):
                 if isinstance(layer, Linear):
                     self.v_w[i] = self.beta * self.v_w[i] + \
-                        (1 - self.beta) * (layer.dw ** 2)
+                        (1 - self.beta) * \
+                        ((layer.dw + self.weight_decay * layer.w) ** 2)
                     self.v_b[i] = self.beta * self.v_b[i] + \
                         (1 - self.beta) * (layer.db ** 2)
-                    layer.w -= self.lr * layer.dw / \
+                    layer.w -= self.lr * (layer.dw + self.weight_decay * layer.w) / \
                         (np.sqrt(self.v_w[i]) + self.epsilon)
                     layer.b -= self.lr * layer.db / \
                         (np.sqrt(self.v_b[i]) + self.epsilon)
 
 
 class Adam(Optimiser):
-    def __init__(self, lr, beta1=0.9, beta2=0.999, epsilon=1e-8):
+    def __init__(self, lr, beta1=0.9, beta2=0.999, epsilon=1e-8, weight_decay=0):
         super().__init__(lr)
         self.beta1 = beta1
         self.beta2 = beta2
@@ -140,6 +148,7 @@ class Adam(Optimiser):
         self.v_b = []
         self.t = 0
         self.started = False
+        self.weight_decay = weight_decay
 
     def start(self, model):
         if hasattr(model, "layers") and isinstance(model.layers, list):
@@ -161,11 +170,12 @@ class Adam(Optimiser):
             for i, layer in enumerate(model.layers):
                 if isinstance(layer, Linear):
                     self.m_w[i] = self.beta1 * self.m_w[i] + \
-                        (1 - self.beta1) * layer.dw
+                        (1 - self.beta1) * (layer.dw + self.weight_decay * layer.w)
                     self.m_b[i] = self.beta1 * self.m_b[i] + \
                         (1 - self.beta1) * layer.db
                     self.v_w[i] = self.beta2 * self.v_w[i] + \
-                        (1 - self.beta2) * (layer.dw ** 2)
+                        (1 - self.beta2) * \
+                        ((layer.dw + self.weight_decay * layer.w) ** 2)
                     self.v_b[i] = self.beta2 * self.v_b[i] + \
                         (1 - self.beta2) * (layer.db ** 2)
                     m_w_hat = self.m_w[i] / (1 - self.beta1 ** self.t)
@@ -179,7 +189,7 @@ class Adam(Optimiser):
 
 
 class Nadam(Optimiser):
-    def __init__(self, lr, beta1=0.9, beta2=0.999, epsilon=1e-8):
+    def __init__(self, lr, beta1=0.9, beta2=0.999, epsilon=1e-8, weight_decay=0):
         super().__init__(lr)
         self.beta1 = beta1
         self.beta2 = beta2
@@ -190,6 +200,7 @@ class Nadam(Optimiser):
         self.v_b = []
         self.t = 0
         self.started = False
+        self.weight_decay = weight_decay
 
     def start(self, model):
         if hasattr(model, "layers") and isinstance(model.layers, list):
@@ -211,11 +222,12 @@ class Nadam(Optimiser):
             for i, layer in enumerate(model.layers):
                 if isinstance(layer, Linear):
                     self.m_w[i] = self.beta1 * self.m_w[i] + \
-                        (1 - self.beta1) * layer.dw
+                        (1 - self.beta1) * (layer.dw + self.weight_decay * layer.w)
                     self.m_b[i] = self.beta1 * self.m_b[i] + \
                         (1 - self.beta1) * layer.db
                     self.v_w[i] = self.beta2 * self.v_w[i] + \
-                        (1 - self.beta2) * (layer.dw ** 2)
+                        (1 - self.beta2) * \
+                        ((layer.dw + self.weight_decay * layer.w) ** 2)
                     self.v_b[i] = self.beta2 * self.v_b[i] + \
                         (1 - self.beta2) * (layer.db ** 2)
                     m_w_hat = self.m_w[i] / (1 - self.beta1 ** self.t)
@@ -223,7 +235,8 @@ class Nadam(Optimiser):
                     v_w_hat = self.v_w[i] / (1 - self.beta2 ** self.t)
                     v_b_hat = self.v_b[i] / (1 - self.beta2 ** self.t)
                     m_w_hat = self.beta1 * m_w_hat + \
-                        ((1 - self.beta1) / (1 - self.beta1 ** self.t)) * layer.dw
+                        ((1 - self.beta1) / (1 - self.beta1 ** self.t)) * \
+                        (layer.dw + self.weight_decay * layer.w)
                     m_b_hat = self.beta1 * m_b_hat + \
                         ((1 - self.beta1) / (1 - self.beta1 ** self.t)) * layer.db
                     layer.w -= self.lr * m_w_hat / \

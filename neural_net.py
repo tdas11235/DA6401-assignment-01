@@ -29,6 +29,14 @@ def tanh_backprop(grad_prev, x):
     return grad_prev * (1 - a ** 2)
 
 
+def identity(x):
+    return x
+
+
+def identity_backprop(grad_prev, x):
+    return grad_prev
+
+
 def softmax(h):
     h -= np.max(h, axis=1, keepdims=True)
     exph = np.exp(h)
@@ -38,14 +46,16 @@ def softmax(h):
 
 class Linear:
     def __init__(self, in_neuron, out_neuron, init_method="random", init_b=False):
-        if init_method == "xavier":
+        if init_method == "Xavier":
             self.w = np.random.randn(in_neuron, out_neuron) * (1 / in_neuron)
             if init_b:
                 self.b = np.random.randn(out_neuron) * (1 / in_neuron)
-        else:
+        elif init_method == "random":
             self.w = np.random.randn(in_neuron, out_neuron)
             if init_b:
                 self.b = np.random.randn(out_neuron)
+        else:
+            raise NotImplementedError
         self.b = np.zeros(out_neuron)
         self.dw = np.zeros_like(self.w)
         self.db = np.zeros_like(self.b)
@@ -57,8 +67,6 @@ class Linear:
     def backprop(self, grad_prev):
         self.dw = self.h.T @ grad_prev
         self.db = np.sum(grad_prev, axis=0)
-        # print("Max weight gradient:", np.max(self.dw))
-        # print("Max bias gradient:", np.max(self.db))
         return grad_prev @ self.w.T
 
 

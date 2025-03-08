@@ -13,24 +13,26 @@ class Trainer:
 
 
 class NormalTrainer(Trainer):
-    def __init__(self, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='NAG', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='ce', epochs=100, init_method="random"):
+    def __init__(self, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='nag', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', epochs=100, init_method="random", weight_decay=0):
         self.model = DNN(in_dim, out_dim, hidden_dims, act_type, init_method)
-        if loss_type == 'ce':
+        if loss_type == 'cross_entropy':
             self.loss = CrossEntropy()
-        else:
+        elif loss_type == "mean_squared_error":
             self.loss = MSE()
-        if optimiser_type == "GD":
-            self.optimiser = opt.GD(lr)
-        elif optimiser_type == "MGD":
-            self.optimiser = opt.MGD(lr, beta)
-        elif optimiser_type == "NAG":
-            self.optimiser = opt.NAG(lr, beta)
-        elif optimiser_type == "RMSProp":
-            self.optimiser = opt.RMSProp(lr, beta)
-        elif optimiser_type == "Adam":
-            self.optimiser = opt.Adam(lr, beta1, beta2)
-        elif optimiser_type == "Nadam":
-            self.optimiser = opt.Nadam(lr, beta1, beta2)
+        else:
+            raise NotImplementedError
+        if optimiser_type == "sgd":
+            self.optimiser = opt.GD(lr, weight_decay)
+        elif optimiser_type == "momentum":
+            self.optimiser = opt.MGD(lr, beta, weight_decay)
+        elif optimiser_type == "nag":
+            self.optimiser = opt.NAG(lr, beta, weight_decay)
+        elif optimiser_type == "rmsprop":
+            self.optimiser = opt.RMSProp(lr, beta, weight_decay)
+        elif optimiser_type == "adam":
+            self.optimiser = opt.Adam(lr, beta1, beta2, weight_decay)
+        elif optimiser_type == "nadam":
+            self.optimiser = opt.Nadam(lr, beta1, beta2, weight_decay)
         else:
             raise NotImplementedError
         self.model.set_optimiser(self.optimiser)
@@ -56,29 +58,31 @@ class NormalTrainer(Trainer):
 
 
 class StochasticTrainer(Trainer):
-    def __init__(self, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.001, optimiser_type='NAG', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='ce', epochs=100, init_method="random"):
+    def __init__(self, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.001, optimiser_type='nag', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', epochs=100, init_method="random", weight_decay=0):
         self.model = DNN(in_dim, out_dim, hidden_dims, act_type, init_method)
-        if loss_type == 'ce':
+        if loss_type == 'cross_entropy':
             self.loss = CrossEntropy()
-        else:
+        elif loss_type == "mean_squared_error":
             self.loss = MSE()
-        if optimiser_type == "GD":
-            self.optimiser = opt.GD(lr)
-        elif optimiser_type == "MGD":
-            self.optimiser = opt.MGD(lr, beta)
-        elif optimiser_type == "NAG":
-            self.optimiser = opt.NAG(lr, beta)
-        elif optimiser_type == "RMSProp":
-            self.optimiser = opt.RMSProp(lr, beta)
-        elif optimiser_type == "Adam":
-            self.optimiser = opt.Adam(lr, beta1, beta2)
-        elif optimiser_type == "Nadam":
-            self.optimiser = opt.Nadam(lr, beta1, beta2)
+        else:
+            raise NotImplementedError
+        if optimiser_type == "sgd":
+            self.optimiser = opt.GD(lr, weight_decay)
+        elif optimiser_type == "momentum":
+            self.optimiser = opt.MGD(lr, beta, weight_decay)
+        elif optimiser_type == "nag":
+            self.optimiser = opt.NAG(lr, beta, weight_decay)
+        elif optimiser_type == "rmsprop":
+            self.optimiser = opt.RMSProp(lr, beta, weight_decay)
+        elif optimiser_type == "adam":
+            self.optimiser = opt.Adam(lr, beta1, beta2, weight_decay)
+        elif optimiser_type == "nadam":
+            self.optimiser = opt.Nadam(lr, beta1, beta2, weight_decay)
         else:
             raise NotImplementedError
         self.model.set_optimiser(self.optimiser)
         self.epochs = epochs
-        self.bacth_size = batch_size
+        self.batch_size = batch_size
 
     def train(self, X, y):
         num_samples = X.shape[0]
