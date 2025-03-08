@@ -22,17 +22,19 @@ class NormalTrainer(Trainer):
         else:
             raise NotImplementedError
         if optimiser_type == "sgd":
-            self.optimiser = opt.GD(lr, weight_decay)
+            self.optimiser = opt.GD(lr, weight_decay=weight_decay)
         elif optimiser_type == "momentum":
-            self.optimiser = opt.MGD(lr, beta, weight_decay)
+            self.optimiser = opt.MGD(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "nag":
-            self.optimiser = opt.NAG(lr, beta, weight_decay)
+            self.optimiser = opt.NAG(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "rmsprop":
-            self.optimiser = opt.RMSProp(lr, beta, weight_decay)
+            self.optimiser = opt.RMSProp(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "adam":
-            self.optimiser = opt.Adam(lr, beta1, beta2, weight_decay)
+            self.optimiser = opt.Adam(
+                lr, beta1, beta2, weight_decay=weight_decay)
         elif optimiser_type == "nadam":
-            self.optimiser = opt.Nadam(lr, beta1, beta2, weight_decay)
+            self.optimiser = opt.Nadam(
+                lr, beta1, beta2, weight_decay=weight_decay)
         else:
             raise NotImplementedError
         self.model.set_optimiser(self.optimiser)
@@ -67,17 +69,19 @@ class StochasticTrainer(Trainer):
         else:
             raise NotImplementedError
         if optimiser_type == "sgd":
-            self.optimiser = opt.GD(lr, weight_decay)
+            self.optimiser = opt.GD(lr, weight_decay=weight_decay)
         elif optimiser_type == "momentum":
-            self.optimiser = opt.MGD(lr, beta, weight_decay)
+            self.optimiser = opt.MGD(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "nag":
-            self.optimiser = opt.NAG(lr, beta, weight_decay)
+            self.optimiser = opt.NAG(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "rmsprop":
-            self.optimiser = opt.RMSProp(lr, beta, weight_decay)
+            self.optimiser = opt.RMSProp(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "adam":
-            self.optimiser = opt.Adam(lr, beta1, beta2, weight_decay)
+            self.optimiser = opt.Adam(
+                lr, beta1, beta2, weight_decay=weight_decay)
         elif optimiser_type == "nadam":
-            self.optimiser = opt.Nadam(lr, beta1, beta2, weight_decay)
+            self.optimiser = opt.Nadam(
+                lr, beta1, beta2, weight_decay=weight_decay)
         else:
             raise NotImplementedError
         self.model.set_optimiser(self.optimiser)

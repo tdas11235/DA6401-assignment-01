@@ -1,29 +1,50 @@
-import random
+import data_loader as dl
+import trainers as tr
+import utils as ut
+import yaml
 
-import wandb
 
-# Start a new wandb run to track this script.
-run = wandb.init(
-    # Set the wandb project where this run will be logged.
-    project="DA6401-assignment-1",
-    # Track hyperparameters and run metadata.
-    config={
-        "learning_rate": 0.02,
-        "architecture": "CNN",
-        "dataset": "CIFAR-100",
+def load_config(path="config.yaml"):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def train(config):
+    hidden_sizes = [config["hidden_size"]] * config["hidden_layers"]
+    trainer = tr.StochasticTrainer(
+        784, 10, hidden_sizes,
+        batch_size=config["batch_size"],
+        epochs=config["epochs"],
+        act_type=config["activation"],
+        optimiser_type=config["optimizer"],
+        lr=config["learning_rate"],
+        weight_decay=config["weight_decay"],
+        loss_type='cross_entropy'
+    )
+    trainer.train(x_train, y_train)
+    val_accuracy = trainer.eval(x_val, y_val)
+    print(val_accuracy)
+
+
+def main():
+    global x_train, y_train, x_val, y_val
+    (x_train, y_train), (x_test, y_test) = dl.load_fashion_data()
+    x_train = x_train.astype('float32') / 255.0
+    x_test = x_test.astype('float32') / 255.0
+    x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
+    config = {
+        "batch_size": 32,
         "epochs": 10,
-    },
-)
+        "hidden_layers": 5,
+        "hidden_size": 128,
+        "learning_rate": 0.001,
+        "optimizer": "adam",
+        "weight_decay": 0,
+        "weight_init": "random",
+        "activation": "ReLU"
+    }
+    train(config)
 
-# Simulate training.
-epochs = 500
-offset = random.random() / 5
-for epoch in range(2, epochs):
-    acc = 1 - 2**-epoch - random.random() / epoch - offset
-    loss = 2**-epoch + random.random() / epoch + offset
 
-    # Log metrics to wandb.
-    run.log({"acc": acc, "loss": loss})
-
-# Finish the run and upload any remaining data.
-run.finish()
+if __name__ == '__main__':
+    main()

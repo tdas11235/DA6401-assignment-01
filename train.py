@@ -49,8 +49,8 @@ def main():
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
-    sweep_id = wandb.sweep(sweep_config, project="da6401-test-1")
-    wandb.agent(sweep_id, train, count=20)
+    sweep_id = wandb.sweep(sweep_config, project="da6401-test-2")
+    wandb.agent(sweep_id, train, count=40)
 
 
 if __name__ == '__main__':
