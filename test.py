@@ -33,15 +33,15 @@ def main():
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
     config = {
-        "batch_size": 32,
+        "batch_size": 128,
         "epochs": 10,
         "hidden_layers": 5,
         "hidden_size": 128,
-        "learning_rate": 0.001,
-        "optimizer": "adam",
+        "learning_rate": 0.01,
+        "optimizer": "nadam",
         "weight_decay": 0,
-        "weight_init": "random",
-        "activation": "ReLU"
+        "weight_init": "Xavier",
+        "activation": "sigmoid"
     }
     train(config)
 
