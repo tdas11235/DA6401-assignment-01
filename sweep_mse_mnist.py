@@ -163,7 +163,7 @@ def main():
     loss_type = "mean_squared_error"
     project = "da6401-test-mnist-mse-1"
     (x_train, y_train), (x_test, y_test), (x_test_og,
-                                           y_test_og) = dl.load_fashion_data()
+                                           y_test_og) = dl.load_mnist_data()
     log_fmnist_images(x_test_og, y_test_og, project)
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
