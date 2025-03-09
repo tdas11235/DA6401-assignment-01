@@ -109,6 +109,11 @@ class StochasticTrainer(Trainer):
         print(f"\nEpoch {epoch+1}, Avg Loss: {avg_epoch_loss:.4f}")
         return avg_epoch_loss
 
+    def predict(self, X):
+        y_pred = self.model.forward(X)
+        y_label = np.argmax(y_pred, axis=1)
+        return y_pred, y_label
+
     def eval(self, X, y):
         y_pred = self.model.forward(X)
         y_pred = np.argmax(y_pred, axis=1)

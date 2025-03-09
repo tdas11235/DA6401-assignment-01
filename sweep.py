@@ -5,6 +5,14 @@ from tqdm import tqdm
 import wandb
 import yaml
 import numpy as np
+import plotly.figure_factory as ff
+from sklearn.metrics import confusion_matrix
+
+
+F_MNIST_CLASSES = [
+    "T-shirt/top", "Trouser", "Pullover", "Dress", "Coat",
+    "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"
+]
 
 
 def load_config(path="config.yaml"):
@@ -12,8 +20,8 @@ def load_config(path="config.yaml"):
         return yaml.safe_load(f)
 
 
-def log_images(x_train, y_train):
-    wandb.init(project="da6401-test-3", name="sample_images")
+def log_fmnist_images(x_train, y_train, project, entity_name='ch21b108-indian-institute-of-technology-madras'):
+    wandb.init(entity=entity_name, project=project, name="sample_images")
     class_labels = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat",
                     "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
     images = []
@@ -21,7 +29,7 @@ def log_images(x_train, y_train):
         idx = np.where(y_train == i)[0][0]
         image_array = x_train[idx]
         images.append(wandb.Image(image_array, caption=class_labels[i]))
-    wandb.log({"dataset": images})
+    wandb.log({"fashion_mnist": images})
     wandb.finish()
 
 
@@ -49,7 +57,7 @@ def train():
         optimiser_type=config.optimizer,
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
-        loss_type='cross_entropy'
+        loss_type=loss_type
     )
     for epoch in tqdm(range(config.epochs), desc="Training Progress"):
         train_loss = trainer.train(x_train, y_train, epoch)
@@ -64,16 +72,93 @@ def train():
     wandb.log({"accuracy": val_accuracy})
 
 
+def get_best(project, entity_name='ch21b108-indian-institute-of-technology-madras'):
+    api = wandb.Api()
+    runs = api.runs(f"{entity_name}/{project}")
+    best_run = max(runs, key=lambda run: run.summary.get("accuracy", 0))
+    print(
+        f"best run found: {best_run.name} with val_accuracy = {best_run.summary['val_accuracy']}")
+    best_config = best_run.config
+    return best_config
+
+
+def plot_confusion(y_true, y_pred):
+    cm = confusion_matrix(y_true, y_pred)
+    cm_normalized = cm.astype('float') / cm.sum(axis=1, keepdims=True)
+    hover_text = [[f"True: {F_MNIST_CLASSES[i]}<br>Pred: {F_MNIST_CLASSES[j]}<br>"
+                   f"Count: {cm[i, j]}<br>Ratio: {cm_normalized[i, j]:.1%}"
+                   for j in range(len(F_MNIST_CLASSES))] for i in range(len(F_MNIST_CLASSES))]
+    fig = ff.create_annotated_heatmap(
+        z=cm_normalized,
+        x=F_MNIST_CLASSES,
+        y=F_MNIST_CLASSES,
+        annotation_text=[[f"{cm[i, j]} ({cm_normalized[i, j]:.1%})" for j in range(
+            len(F_MNIST_CLASSES))] for i in range(len(F_MNIST_CLASSES))],
+        colorscale="RdYlGn",
+        hoverinfo="text",
+        text=hover_text
+    )
+    fig.update_layout(
+        xaxis=dict(
+            tickmode="array",
+            tickvals=list(range(len(F_MNIST_CLASSES))),
+            ticktext=F_MNIST_CLASSES
+        ),
+        yaxis=dict(
+            tickmode="array",
+            tickvals=list(range(len(F_MNIST_CLASSES))),
+            ticktext=F_MNIST_CLASSES
+        ),
+        title="Confusion Matrix",
+        xaxis_title="Predicted Label",
+        yaxis_title="True Label",
+        width=800, height=800
+    )
+    wandb.log({"confusion_matrix_vis": wandb.Plotly(fig)})
+
+
+def test_best(project, entity_name='ch21b108-indian-institute-of-technology-madras'):
+    best_config = get_best(project, entity_name)
+    wandb.init(entity=entity_name, project=project,
+               name="best_model")
+    hidden_sizes = [best_config["hidden_size"]] * best_config["hidden_layers"]
+    best_trainer = tr.StochasticTrainer(
+        784, 10, hidden_sizes,
+        batch_size=best_config["batch_size"],
+        act_type=best_config["activation"],
+        optimiser_type=best_config["optimizer"],
+        lr=best_config["learning_rate"],
+        weight_decay=best_config["weight_decay"],
+        loss_type=loss_type
+    )
+    for epoch in tqdm(range(best_config["epochs"]), desc="Training Progress"):
+        train_loss = best_trainer.train(x_train, y_train, epoch)
+        wandb.log({"epoch": epoch + 1, "train_loss": train_loss})
+    test_accuracy, _ = best_trainer.eval(x_test, y_test)
+    wandb.log({"test_accuracy": test_accuracy})
+    _, y_pred_labels = best_trainer.predict(x_test)
+    y_true_labels = np.argmax(y_test, axis=1)
+    wandb.log({"confusion_matrix_data": wandb.plot.confusion_matrix(
+        probs=None, y_true=y_true_labels, preds=y_pred_labels, class_names=F_MNIST_CLASSES
+    )})
+    plot_confusion(y_true_labels, y_pred_labels)
+    wandb.finish()
+
+
 def main():
     sweep_config = load_config()
-    global x_train, y_train, x_val, y_val
-    (x_train, y_train), (x_test, y_test) = dl.load_fashion_data()
-    log_images(x_train, y_train)
+    global x_train, y_train, x_val, y_val, x_test, y_test, loss_type
+    loss_type = "cross_entropy"
+    project = "da6401-test-6"
+    (x_train, y_train), (x_test, y_test), (x_test_og,
+                                           y_test_og) = dl.load_fashion_data()
+    log_fmnist_images(x_test_og, y_test_og, project)
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
-    sweep_id = wandb.sweep(sweep_config, project="da6401-test-3")
-    wandb.agent(sweep_id, train, count=30)
+    sweep_id = wandb.sweep(sweep_config, project=project)
+    wandb.agent(sweep_id, train, count=5)
+    test_best(project)
 
 
 if __name__ == '__main__':
