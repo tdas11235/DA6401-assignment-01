@@ -92,6 +92,8 @@ class StochasticTrainer(Trainer):
         indices = np.arange(num_samples)
         np.random.shuffle(indices)
         epoch_loss = 0.0
+        total_correct = 0
+        total_samples = 0
         batch_bar = tqdm(range(0, num_samples, self.batch_size),
                          desc=f"Epoch {epoch+1}", leave=False)
         for i in batch_bar:
@@ -103,11 +105,18 @@ class StochasticTrainer(Trainer):
             self.model.zero_grad()
             self.model.backprop(grad_loss)
             self.model.step()
+            y_label = np.argmax(y_pred, axis=1)
+            y_batch_label = np.argmax(y_batch, axis=1)
+            correct = np.sum(y_label == y_batch_label)
+            total_correct += correct
+            total_samples += len(y_batch)
             epoch_loss += train_loss
             batch_bar.set_postfix(loss=train_loss)
         avg_epoch_loss = epoch_loss / (num_samples // self.batch_size)
-        print(f"\nEpoch {epoch+1}, Avg Loss: {avg_epoch_loss:.4f}")
-        return avg_epoch_loss
+        avg_epoch_acc = total_correct / total_samples
+        print(
+            f"\nEpoch {epoch+1}, Avg Loss: {avg_epoch_loss:.4f}")
+        return train_loss, avg_epoch_acc
 
     def predict(self, X):
         y_pred = self.model.forward(X)

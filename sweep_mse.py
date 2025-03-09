@@ -160,8 +160,8 @@ def test_best(project, entity_name='ch21b108-indian-institute-of-technology-madr
 def main():
     sweep_config = load_config()
     global x_train, y_train, x_val, y_val, x_test, y_test, loss_type
-    loss_type = "cross_entropy"
-    project = "da6401-test-ce-1"
+    loss_type = "mean_squared_error"
+    project = "da6401-test-mse-1"
     (x_train, y_train), (x_test, y_test), (x_test_og,
                                            y_test_og) = dl.load_fashion_data()
     log_fmnist_images(x_test_og, y_test_og, project)
@@ -169,7 +169,7 @@ def main():
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
     sweep_id = wandb.sweep(sweep_config, project=project)
-    wandb.sagent(sweep_id, train, count=30)
+    wandb.agent(sweep_id, train, count=30)
     test_best(project)
 
 
