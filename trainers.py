@@ -13,7 +13,7 @@ class Trainer:
 
 
 class NormalTrainer(Trainer):
-    def __init__(self, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='nag', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', epochs=100, init_method="random", weight_decay=0):
+    def __init__(self, in_dim, out_dim, hidden_dims, lr=0.001, optimiser_type='nag', momentum=0.9, beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', epochs=100, init_method="random", weight_decay=0):
         self.model = DNN(in_dim, out_dim, hidden_dims, act_type, init_method)
         if loss_type == 'cross_entropy':
             self.loss = CrossEntropy()
@@ -21,12 +21,12 @@ class NormalTrainer(Trainer):
             self.loss = MSE()
         else:
             raise NotImplementedError
-        if optimiser_type == "sgd":
+        if optimiser_type == "gd":
             self.optimiser = opt.GD(lr, weight_decay=weight_decay)
         elif optimiser_type == "momentum":
-            self.optimiser = opt.MGD(lr, beta, weight_decay=weight_decay)
+            self.optimiser = opt.MGD(lr, momentum, weight_decay=weight_decay)
         elif optimiser_type == "nag":
-            self.optimiser = opt.NAG(lr, beta, weight_decay=weight_decay)
+            self.optimiser = opt.NAG(lr, momentum, weight_decay=weight_decay)
         elif optimiser_type == "rmsprop":
             self.optimiser = opt.RMSProp(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "adam":
@@ -60,7 +60,7 @@ class NormalTrainer(Trainer):
 
 
 class StochasticTrainer(Trainer):
-    def __init__(self, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.001, optimiser_type='nag', beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', init_method="random", weight_decay=0):
+    def __init__(self, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.001, optimiser_type='nag', momentum=0.9, beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', init_method="random", weight_decay=0):
         self.model = DNN(in_dim, out_dim, hidden_dims, act_type, init_method)
         if loss_type == 'cross_entropy':
             self.loss = CrossEntropy()
@@ -71,9 +71,9 @@ class StochasticTrainer(Trainer):
         if optimiser_type == "sgd":
             self.optimiser = opt.GD(lr, weight_decay=weight_decay)
         elif optimiser_type == "momentum":
-            self.optimiser = opt.MGD(lr, beta, weight_decay=weight_decay)
+            self.optimiser = opt.MGD(lr, momentum, weight_decay=weight_decay)
         elif optimiser_type == "nag":
-            self.optimiser = opt.NAG(lr, beta, weight_decay=weight_decay)
+            self.optimiser = opt.NAG(lr, momentum, weight_decay=weight_decay)
         elif optimiser_type == "rmsprop":
             self.optimiser = opt.RMSProp(lr, beta, weight_decay=weight_decay)
         elif optimiser_type == "adam":
