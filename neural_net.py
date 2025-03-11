@@ -48,9 +48,9 @@ class Linear:
     def __init__(self, in_neuron, out_neuron, init_method="random", init_b=False, seed=42):
         np.random.seed(seed)
         if init_method == "Xavier":
-            self.w = np.random.randn(in_neuron, out_neuron) * (1 / in_neuron)
+            self.w = np.random.randn(in_neuron, out_neuron) * np.sqrt(1 / in_neuron)
             if init_b:
-                self.b = np.random.randn(out_neuron) * (1 / in_neuron)
+                self.b = np.random.randn(out_neuron) * np.sqrt(1 / in_neuron)
             else:
                 self.b = np.zeros(out_neuron)
         elif init_method == "random":
