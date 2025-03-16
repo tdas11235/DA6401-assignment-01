@@ -7,14 +7,10 @@ import yaml
 import numpy as np
 import plotly.figure_factory as ff
 from sklearn.metrics import confusion_matrix
+from config_mnist import configs
 
 
 MNIST_CLASSES = [str(i) for i in range(10)]
-
-
-def load_config(path="config_mnist.yaml"):
-    with open(path, "r") as f:
-        return yaml.safe_load(f)
 
 
 def log_fmnist_images(x_train, y_train, project, entity_name='ch21b108-indian-institute-of-technology-madras'):
@@ -28,33 +24,30 @@ def log_fmnist_images(x_train, y_train, project, entity_name='ch21b108-indian-in
     wandb.finish()
 
 
-def train():
-    wandb.init()
-    config = wandb.config
-    hidden_sizes = [config.hidden_size] * config.hidden_layers
+def train(config, project, entity_name='ch21b108-indian-institute-of-technology-madras'):
     run_name = (
-        f"hl_{config.hidden_layers}"       # Number of hidden layers
-        f"_hs_{config.hidden_size}"        # Hidden layer sizes
-        f"_bs_{config.batch_size}"         # Batch size
-        f"_ac_{config.activation}"         # Activation function
-        f"_opt_{config.optimizer}"         # Optimizer
-        f"_lr_{config.learning_rate}"      # Learning rate
-        f"_wd_{config.weight_decay}"       # Weight decay
-        f"_wi_{config.weight_init}"        # Weight initialization
-        f"_ep_{config.epochs}"             # Number of epochs
+        f"hl_{config['hidden_layers']}"       # Number of hidden layers
+        f"_hs_{config['hidden_size']}"        # Hidden layer sizes
+        f"_bs_{config['batch_size']}"         # Batch size
+        f"_ac_{config['activation']}"         # Activation function
+        f"_opt_{config['optimizer']}"         # Optimizer
+        f"_lr_{config['learning_rate']}"      # Learning rate
+        f"_wd_{config['weight_decay']}"       # Weight decay
+        f"_wi_{config['weight_init']}"        # Weight initialization
+        f"_ep_{config['epochs']}"             # Number of epochs
     )
-    wandb.run.name = run_name
-    wandb.run.save()
+    wandb.init(entity=entity_name, project=project, name=run_name)
+    hidden_sizes = [config['hidden_size']] * config['hidden_layers']
     trainer = tr.StochasticTrainer(
         784, 10, hidden_sizes,
-        batch_size=config.batch_size,
-        act_type=config.activation,
-        optimiser_type=config.optimizer,
-        lr=config.learning_rate,
-        weight_decay=config.weight_decay,
+        batch_size=config['batch_size'],
+        act_type=config['activation'],
+        optimiser_type=config['optimizer'],
+        lr=config['learning_rate'],
+        weight_decay=config['weight_decay'],
         loss_type=loss_type
     )
-    for epoch in tqdm(range(config.epochs), desc="Training Progress"):
+    for epoch in tqdm(range(config['epochs']), desc="Training Progress"):
         train_loss, train_acc = trainer.train(x_train, y_train, epoch)
         val_accuracy, val_loss = trainer.eval(x_val, y_val)
         wandb.log({
@@ -66,16 +59,8 @@ def train():
         })
     val_accuracy, _ = trainer.eval(x_val, y_val)
     wandb.log({"accuracy": val_accuracy})
-
-
-def get_best(project, entity_name='ch21b108-indian-institute-of-technology-madras'):
-    api = wandb.Api()
-    runs = api.runs(f"{entity_name}/{project}")
-    best_run = max(runs, key=lambda run: run.summary.get("accuracy", 0))
-    print(
-        f"best run found: {best_run.name} with accuracy = {best_run.summary['accuracy']}")
-    best_config = best_run.config
-    return best_config
+    wandb.finish()
+    return val_accuracy
 
 
 def plot_confusion(y_true, y_pred):
@@ -126,8 +111,7 @@ def plot_confusion(y_true, y_pred):
     wandb.log({"confusion_matrix_vis": wandb.Plotly(fig)})
 
 
-def test_best(project, entity_name='ch21b108-indian-institute-of-technology-madras'):
-    best_config = get_best(project, entity_name)
+def test_best(best_config, project, entity_name='ch21b108-indian-institute-of-technology-madras'):
     wandb.init(entity=entity_name, project=project,
                name="best_model")
     hidden_sizes = [best_config["hidden_size"]] * best_config["hidden_layers"]
@@ -155,7 +139,6 @@ def test_best(project, entity_name='ch21b108-indian-institute-of-technology-madr
 
 
 def main():
-    sweep_config = load_config()
     global x_train, y_train, x_val, y_val, x_test, y_test, loss_type
     loss_type = "cross_entropy"
     project = "da6401-test-mnist-ce-1"
@@ -165,9 +148,14 @@ def main():
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
-    sweep_id = wandb.sweep(sweep_config, project=project)
-    wandb.sagent(sweep_id, train, count=30)
-    test_best(project)
+    best_config = None
+    mx = -1
+    for config in configs:
+        acc = train(config, project)
+        if acc > mx:
+            best_config = config
+            mx = acc
+    test_best(best_config, project)
 
 
 if __name__ == '__main__':
