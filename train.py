@@ -79,7 +79,7 @@ def log_mnist_images(x_train, y_train, project, entity_name='ch21b108-indian-ins
     wandb.finish()
 
 
-def train(config, project, entity_name):
+def train(config, project, entity_name, CLASSES):
     run_name = (
         f"hl_{config.num_layers}"       # Number of hidden layers
         f"_hs_{config.hidden_size}"        # Hidden layer sizes
@@ -114,7 +114,8 @@ def train(config, project, entity_name):
         })
     val_accuracy, _ = trainer.eval(x_val, y_val)
     wandb.log({"accuracy": val_accuracy})
-    return trainer
+    test(trainer, CLASSES)
+    wandb.finish()
 
 
 def plot_confusion(y_true, y_pred, CLASSES):
@@ -165,9 +166,7 @@ def plot_confusion(y_true, y_pred, CLASSES):
     wandb.log({"confusion_matrix_vis": wandb.Plotly(fig)})
 
 
-def test(trainer, project, entity_name, CLASSES):
-    wandb.init(entity=entity_name, project=project,
-               name="best_model")
+def test(trainer, CLASSES):
     test_accuracy, _ = trainer.eval(x_test, y_test)
     wandb.log({"test_accuracy": test_accuracy})
     _, y_pred_labels = trainer.predict(x_test)
@@ -176,7 +175,6 @@ def test(trainer, project, entity_name, CLASSES):
         probs=None, y_true=y_true_labels, preds=y_pred_labels, class_names=CLASSES
     )})
     plot_confusion(y_true_labels, y_pred_labels, CLASSES)
-    wandb.finish()
 
 
 def main(args):
@@ -197,8 +195,7 @@ def main(args):
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
     x_train, x_val, y_train, y_val = ut.train_val_split(x_train, y_train)
-    model = train(args, project, entity_name)
-    test(model, project, entity_name, CLASSES)
+    train(args, project, entity_name, CLASSES)
 
 
 if __name__ == "__main__":
