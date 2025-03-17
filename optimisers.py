@@ -34,6 +34,7 @@ class MGD(Optimiser):
         self.weight_decay = weight_decay
 
     def start(self, model):
+        # initialize the optimiser with the velocities
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for layer in model.layers:
                 if isinstance(layer, Linear):
@@ -66,6 +67,7 @@ class NAG(Optimiser):
         self.weight_decay = weight_decay
 
     def start(self, model):
+        # initialize the optimiser with the velocities
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for layer in model.layers:
                 if isinstance(layer, Linear):
@@ -76,6 +78,7 @@ class NAG(Optimiser):
             print("Layers not found!")
 
     def lookahead(self, model):
+        # lookahead step
         if not self.started:
             self.start(model)
         if hasattr(model, "layers") and isinstance(model.layers, list):
@@ -110,6 +113,7 @@ class RMSProp(Optimiser):
         self.weight_decay = weight_decay
 
     def start(self, model):
+        # initialize the optimiser with the histories
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for layer in model.layers:
                 if isinstance(layer, Linear):
@@ -151,6 +155,7 @@ class Adam(Optimiser):
         self.weight_decay = weight_decay
 
     def start(self, model):
+        # initialize the optimiser with the velocities and histories
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for layer in model.layers:
                 if isinstance(layer, Linear):
@@ -203,6 +208,7 @@ class Nadam(Optimiser):
         self.weight_decay = weight_decay
 
     def start(self, model):
+        # initialize the optimiser with the velocities and histories
         if hasattr(model, "layers") and isinstance(model.layers, list):
             for layer in model.layers:
                 if isinstance(layer, Linear):

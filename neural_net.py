@@ -48,7 +48,8 @@ class Linear:
     def __init__(self, in_neuron, out_neuron, init_method="random", init_b=False, seed=42):
         np.random.seed(seed)
         if init_method == "Xavier":
-            self.w = np.random.randn(in_neuron, out_neuron) * np.sqrt(1 / in_neuron)
+            self.w = np.random.randn(
+                in_neuron, out_neuron) * np.sqrt(1 / in_neuron)
             if init_b:
                 self.b = np.random.randn(out_neuron) * np.sqrt(1 / in_neuron)
             else:
@@ -96,6 +97,7 @@ class Module:
                     layer.db.fill(0)
 
     def step(self):
+        """Function to update the parameters of the network"""
         if self.optimiser:
             self.optimiser.update(self)
 

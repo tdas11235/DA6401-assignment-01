@@ -14,11 +14,13 @@ class CrossEntropy(Loss):
         self.epsilon = epsilon
 
     def forward(self, y_true, y_pred):
+        # to prevent log(0) error
         y_pred = np.clip(y_pred, self.epsilon, 1 - self.epsilon)
         loss = -np.sum(y_true * np.log(y_pred)) / y_true.shape[0]
         return loss
 
     def backprop(self, y_true, y_pred):
+        # for softmax activation in final layer
         return (y_pred - y_true) / y_true.shape[0]
 
 
@@ -28,5 +30,6 @@ class MSE(Loss):
         return loss
 
     def backprop(self, y_true, y_pred):
+        # for softmax activation in final layer
         return (2 / y_true.shape[0]) * y_pred * ((y_pred - y_true) -
                                                  np.sum((y_pred - y_true) * y_pred, axis=1, keepdims=True))

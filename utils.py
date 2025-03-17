@@ -7,6 +7,7 @@ def train_val_split(X, y, ratio=0.1, seed=42):
     unique_classes = np.unique(class_labels)
     X_train_list, X_val_list = [], []
     y_train_list, y_val_list = [], []
+    # shuffle and pick from classes individually
     for cls in unique_classes:
         class_indices = np.where(class_labels == cls)[0]
         np.random.shuffle(class_indices)
