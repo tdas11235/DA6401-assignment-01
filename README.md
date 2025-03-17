@@ -56,3 +56,9 @@ To run the `train.py` file
 ```bash
 python train.py --wandb_entity myname --wandb_project myprojectname
 ```
+
+## Links
+
+- Link to Report: [Report](https://wandb.ai/ch21b108-indian-institute-of-technology-madras/da6401-test-ce-5/reports/DA6401-Assignment-1--VmlldzoxMTgzOTMzMA?accessToken=4lndekbwuo5yimgbrz9uc5fw4syt0veus9frklsdxypqp2d3ynwydl73046ybi6g)
+
+- Link to GitHub: [Codebase](https://github.com/tdas11235/DA6401-assignment-01)
