@@ -60,7 +60,7 @@ class NormalTrainer(Trainer):
 
 
 class StochasticTrainer(Trainer):
-    def __init__(self, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.001, optimiser_type='nag', momentum=0.9, beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', init_method="random", weight_decay=0):
+    def __init__(self, in_dim, out_dim, hidden_dims, batch_size=1, lr=0.001, optimiser_type='nag', momentum=0.9, beta=0.9, beta1=0.9, beta2=0.999, act_type='sigmoid', loss_type='cross_entropy', init_method="random", weight_decay=0, true_sgd=False):
         self.model = DNN(in_dim, out_dim, hidden_dims, act_type, init_method)
         if loss_type == 'cross_entropy':
             self.loss = CrossEntropy()
@@ -68,8 +68,11 @@ class StochasticTrainer(Trainer):
             self.loss = MSE()
         else:
             raise NotImplementedError
+        self.batch_size = batch_size
         if optimiser_type == "sgd":
             self.optimiser = opt.GD(lr, weight_decay=weight_decay)
+            if true_sgd == True:
+                self.batch_size = 1
         elif optimiser_type == "momentum":
             self.optimiser = opt.MGD(lr, momentum, weight_decay=weight_decay)
         elif optimiser_type == "nag":
@@ -85,7 +88,6 @@ class StochasticTrainer(Trainer):
         else:
             raise NotImplementedError
         self.model.set_optimiser(self.optimiser)
-        self.batch_size = batch_size
 
     def train(self, X, y, epoch):
         num_samples = X.shape[0]
@@ -116,7 +118,7 @@ class StochasticTrainer(Trainer):
         avg_epoch_acc = total_correct / total_samples
         print(
             f"\nEpoch {epoch+1}, Avg Loss: {avg_epoch_loss:.4f}")
-        return train_loss, avg_epoch_acc
+        return avg_epoch_loss, avg_epoch_acc
 
     def predict(self, X):
         y_pred = self.model.forward(X)
@@ -125,8 +127,8 @@ class StochasticTrainer(Trainer):
 
     def eval(self, X, y):
         y_pred = self.model.forward(X)
+        val_loss = self.loss.forward(y, y_pred)
         y_pred = np.argmax(y_pred, axis=1)
         y = np.argmax(y, axis=1)
         accuracy = np.mean(y_pred == y)
-        val_loss = self.loss.forward(y, y_pred)
         return accuracy, val_loss

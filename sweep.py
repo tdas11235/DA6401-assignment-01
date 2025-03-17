@@ -161,7 +161,7 @@ def main():
     sweep_config = load_config()
     global x_train, y_train, x_val, y_val, x_test, y_test, loss_type
     loss_type = "cross_entropy"
-    project = "da6401-test-ce-2"
+    project = "da6401-test-ce-5"
     (x_train, y_train), (x_test, y_test), (x_test_og,
                                            y_test_og) = dl.load_fashion_data()
     log_fmnist_images(x_test_og, y_test_og, project)
