@@ -26,7 +26,7 @@ def get_args():
                         help="Dataset to use. Choices: ['mnist', 'fashion_mnist']")
     parser.add_argument("-e", "--epochs", type=int, default=10,
                         help="Number of epochs to train the neural network.")
-    parser.add_argument("-b", "--batch_size", type=int, default=16,
+    parser.add_argument("-b", "--batch_size", type=int, default=32,
                         help="Batch size used to train the neural network.")
     parser.add_argument("-l", "--loss", type=str, choices=["mean_squared_error", "cross_entropy"], default="cross_entropy",
                         help="Loss function. Choices: ['mean_squared_error', 'cross_entropy']")
@@ -46,9 +46,9 @@ def get_args():
                         default=1e-8, help="Epsilon used by optimizers.")
     parser.add_argument("-w_d", "--weight_decay", type=float,
                         default=0.0, help="Weight decay used by optimizers.")
-    parser.add_argument("-w_i", "--weight_init", type=str, choices=["random", "Xavier"], default="random",
+    parser.add_argument("-w_i", "--weight_init", type=str, choices=["random", "Xavier"], default="Xavier",
                         help="Weight initialization method. Choices: ['random', 'Xavier']")
-    parser.add_argument("-nhl", "--num_layers", type=int, default=3,
+    parser.add_argument("-nhl", "--num_layers", type=int, default=4,
                         help="Number of hidden layers in the feedforward neural network.")
     parser.add_argument("-sz", "--hidden_size", type=int, default=64,
                         help="Number of hidden neurons in a feedforward layer.")
